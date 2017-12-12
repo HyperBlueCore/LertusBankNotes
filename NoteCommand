@@ -1,0 +1,66 @@
+package com.LertusBankNotes;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+public class NoteCommand implements CommandExecutor {
+
+    private Main plugin;
+
+    public NoteCommand(Main plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            return false;
+        } else if (args[0].equalsIgnoreCase("reload")) {
+            if (!sender.hasPermission("Notes.reload")) {
+                sender.sendMessage(plugin.getColor(ChatColor.RED + "No Permission!"));
+            } else {
+                plugin.reloadConfig();
+                plugin.reload();
+                sender.sendMessage(plugin.getColor("&aReload Complete"));
+            }
+            return true;
+        } else if (args[0].equalsIgnoreCase("give") && args.length >= 3) {
+            if (!sender.hasPermission("Notes.give")) {
+                sender.sendMessage(ChatColor.RED + "No Permission!");
+            } else {
+                Player target = Bukkit.getPlayer(args[1]);
+                if (target == null) {
+                    sender.sendMessage(plugin.getColor("N/A"));
+                    return true;
+                }
+
+                double amount;
+                try {
+                    amount = Double.parseDouble(args[2]);
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage((ChatColor.RED + "No Permission!"));
+                    return true;
+                }
+
+                if (Double.isNaN(amount) || Double.isInfinite(amount) || amount <= 0) {
+                    sender.sendMessage((ChatColor.RED + "Invalid Number!"));
+                } else {
+                    ItemStack banknote = plugin.createBanknote(sender.getName(), amount);
+                    target.getInventory().addItem(banknote);
+
+                    String senderName = sender instanceof ConsoleCommandSender ? ("CONSOLE") : sender.getName();
+
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+}
